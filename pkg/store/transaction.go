@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 )
 
 const transactionCollection = "transactions"
@@ -22,9 +24,53 @@ func (s transactionStore) Create(transaction *model.Transaction) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := s.db.Database(s.config.MongoDatabase).Collection(transactionCollection)
-	if _, err := collection.InsertOne(ctx, transaction); err != nil {
-		fmt.Printf("Store: failed to insert transaction: %v", err)
+	accountCollection := s.db.Database(s.config.MongoDatabase).Collection(accountCollection)
+	transactionCollection := s.db.Database(s.config.MongoDatabase).Collection(transactionCollection)
+
+	wc := writeconcern.New(writeconcern.WMajority())
+    txnOpts := options.Transaction().SetWriteConcern(wc)
+
+	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
+		updateSender := bson.M{
+			"$inc": bson.M{
+				"balance": transaction.Amount*-1,
+			},
+		}
+		if err := accountCollection.FindOneAndUpdate(sessCtx, bson.D{{Key: "username", Value: transaction.From}}, updateSender).Err(); err != nil {
+			fmt.Printf("Store: failed to update sender: %v\n", err)
+			return nil, err
+		}
+
+		fmt.Println("Store: update sender successfully!")
+
+		updateReceiver := bson.M{
+			"$inc": bson.M{
+				"balance": transaction.Amount,
+			},
+		}
+		if err := accountCollection.FindOneAndUpdate(sessCtx, bson.D{{Key: "username", Value: transaction.To}}, updateReceiver).Err(); err != nil {
+			fmt.Printf("Store: failed to update receiver: %v\n", err)
+			return nil, err
+		}
+
+		fmt.Println("Store: update receiver successfully!")
+
+		if _, err := transactionCollection.InsertOne(ctx, transaction); err != nil {
+			fmt.Printf("Store: failed to insert transaction: %v", err)
+			return nil, err
+		}
+
+		fmt.Println("Store: create transaction successfully!")
+
+		return nil, nil
+	}
+
+	session, err := s.db.StartSession()
+	if err != nil {
+		return err
+	}
+	defer session.EndSession(ctx)
+	if _, err := session.WithTransaction(ctx, callback, txnOpts); err != nil {
 		return err
 	}
 

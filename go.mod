@@ -4,11 +4,10 @@ go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.8.1
-	github.com/kelseyhightower/envconfig v1.4.0
 	go.mongodb.org/mongo-driver v1.10.3
+    github.com/jinzhu/copier v0.3.5
+    github.com/joho/godotenv v1.4.0
 )
-
-require github.com/jinzhu/copier v0.3.5
 
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect

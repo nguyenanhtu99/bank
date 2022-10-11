@@ -1,6 +1,23 @@
 package store
 
+import (
+	"os"
+
+	"github.com/joho/godotenv"
+)
+
 type Config struct {
-	MongoUrl		string	`default:"mongodb://127.0.0.1:27017" split_words:"true"`
-	MongoDatabase	string	`default:"bank" split_words:"true"`
+	MongoUrl		string
+	MongoDatabase	string
+}
+
+func loadConfig() (*Config, error) {
+	if err := godotenv.Load(); err != nil {
+		return nil, err
+	}
+	cfg := Config{
+		MongoUrl: os.Getenv("MONGO_URL"),
+		MongoDatabase: os.Getenv("MONGO_DATABASE"),
+	}
+	return &cfg, nil
 }

@@ -31,7 +31,7 @@ func CreateTransaction(svc executor.IService) gin.HandlerFunc {
 		}
 
 		if err := svc.CreateTransaction(&payload); err != nil {
-			fmt.Printf("Handler: Failed to create account: %v\n", err)
+			fmt.Printf("Handler: Failed to create transaction: %v\n", err)
 			c.AbortWithStatusJSON(500, gin.H{
 				"message": "Failed to create transaction",
 				"error": err.Error(),
