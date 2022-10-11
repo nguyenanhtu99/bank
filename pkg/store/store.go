@@ -6,13 +6,12 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
-	validatorAccount = bson.M{
+	accountValidator = bson.M{
 		"$jsonSchema": bson.M{
 			"bsonType": "object",
 			"required": []string{"username", "balance"},
@@ -29,7 +28,7 @@ var (
 			},
 		},
 	}
-	validatorTransaction = bson.M{
+	transationValidator = bson.M{
 		"$jsonSchema": bson.M{
 			"bsonType": "object",
 			"required": []string{"from", "to", "amount"},
@@ -57,11 +56,11 @@ func New() (IStore, error) {
 
 	db := connectDB(conf)
 
-	if err := Migrate(db.Database(conf.MongoDatabase), accountCollection, validatorAccount); err != nil {
+	if err := accountMigrate(db.Database(conf.MongoDatabase)); err != nil {
 		fmt.Printf("Failed to create collection: %v\n", err)
 	}
 
-	if err := Migrate(db.Database(conf.MongoDatabase), transactionCollection, validatorTransaction); err != nil {
+	if err := transactionMigrate(db.Database(conf.MongoDatabase)); err != nil {
 		fmt.Printf("Failed to create collection: %v\n", err)
 	}
 
@@ -76,7 +75,7 @@ func connectDB(config *Config) *mongo.Client {
 		fmt.Println(err)
 	}
  
-	ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 	err = client.Connect(ctx)
 	defer cancel()
  
@@ -88,12 +87,32 @@ func connectDB(config *Config) *mongo.Client {
 	return client
 }
 
-func Migrate(db *mongo.Database, collectionName string, validator primitive.M) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+func accountMigrate(db *mongo.Database) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 	defer cancel()
 
-	opt := options.CreateCollection().SetValidator(validator)
-	if err := db.CreateCollection(ctx, collectionName, opt); err != nil {
+	optValidator := options.CreateCollection().SetValidator(accountValidator)
+	if err := db.CreateCollection(ctx, accountCollection, optValidator); err != nil {
+		return err
+	}
+
+	model := mongo.IndexModel{
+		Keys: bson.M{"username": "text"}, 
+		Options: options.Index().SetUnique(true),
+	}
+	if _, err := db.Collection(accountCollection).Indexes().CreateOne(ctx, model); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func transactionMigrate(db *mongo.Database) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	defer cancel()
+
+	optValidator := options.CreateCollection().SetValidator(transationValidator)
+	if err := db.CreateCollection(ctx, transactionCollection, optValidator); err != nil {
 		return err
 	}
 

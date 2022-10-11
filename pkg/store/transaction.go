@@ -21,7 +21,7 @@ type transactionStore struct {
 func (s transactionStore) Create(transaction *model.Transaction) error {
 	fmt.Println("Store: creating transaction ...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1 * time.Second)
 	defer cancel()
 
 	accountCollection := s.db.Database(s.config.MongoDatabase).Collection(accountCollection)
@@ -82,7 +82,7 @@ func (s transactionStore) Create(transaction *model.Transaction) error {
 func (s transactionStore) GetByUserName(userName string) (*[]model.Transaction, error) {
 	fmt.Println("Store: getting transaction ...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1 * time.Second)
 	var result []model.Transaction
 	defer cancel()
 
