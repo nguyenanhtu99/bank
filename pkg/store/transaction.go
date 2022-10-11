@@ -21,19 +21,19 @@ type transactionStore struct {
 func (s transactionStore) Create(transaction *model.Transaction) error {
 	fmt.Println("Store: creating transaction ...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	accountCollection := s.db.Database(s.config.MongoDatabase).Collection(accountCollection)
 	transactionCollection := s.db.Database(s.config.MongoDatabase).Collection(transactionCollection)
 
 	wc := writeconcern.New(writeconcern.WMajority())
-    txnOpts := options.Transaction().SetWriteConcern(wc)
+	txnOpts := options.Transaction().SetWriteConcern(wc)
 
 	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
 		updateSender := bson.M{
 			"$inc": bson.M{
-				"balance": transaction.Amount*-1,
+				"balance": transaction.Amount * -1,
 			},
 		}
 		if err := accountCollection.FindOneAndUpdate(sessCtx, bson.D{{Key: "username", Value: transaction.From}}, updateSender).Err(); err != nil {
@@ -82,13 +82,13 @@ func (s transactionStore) Create(transaction *model.Transaction) error {
 func (s transactionStore) GetByUserName(userName string) (*[]model.Transaction, error) {
 	fmt.Println("Store: getting transaction ...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	var result []model.Transaction
 	defer cancel()
 
 	collection := s.db.Database(s.config.MongoDatabase).Collection(transactionCollection)
 	filter := bson.D{
-		{Key: "$or", 
+		{Key: "$or",
 			Value: bson.A{
 				bson.D{{Key: "from", Value: userName}},
 				bson.D{{Key: "to", Value: userName}},
@@ -111,7 +111,7 @@ func (s transactionStore) GetByUserName(userName string) (*[]model.Transaction, 
 
 			return nil, err
 		}
-	  
+
 		result = append(result, transaction)
 	}
 

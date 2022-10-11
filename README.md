@@ -73,7 +73,7 @@ The result must be:
                 "from": "user1",
                 "to": "user2",
                 "amount": 5,
-                "createdAt": 1665494158
+                "createdAt": <Unix Timestamp>
             }
         ]
     },

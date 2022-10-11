@@ -9,9 +9,9 @@ import (
 )
 
 type CreateTransactionInput struct {
-	From string `json:"from" validate:"required"`
-	To string `json:"to" validate:"required,nefield=From"`
-	Amount float64 `json:"amount" validate:"gt=0"`
+	From 	string 	`json:"from" validate:"required"`
+	To		string 	`json:"to" validate:"required,nefield=From"`
+	Amount	float64 `json:"amount" validate:"gt=0"`
 }
 
 func (svc *service) CreateTransaction(input *CreateTransactionInput) error {

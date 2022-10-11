@@ -18,7 +18,7 @@ type accountStore struct {
 func (s accountStore) Create(account *model.Account) error {
 	fmt.Println("Store: creating account ...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	collection := s.db.Database(s.config.MongoDatabase).Collection(accountCollection)
@@ -35,7 +35,7 @@ func (s accountStore) Create(account *model.Account) error {
 func (s accountStore) GetByUserName(userName string) (*model.Account, error) {
 	fmt.Println("Store: getting account ...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	var result *model.Account
 	defer cancel()
 
