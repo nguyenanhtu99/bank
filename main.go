@@ -8,8 +8,10 @@ import (
 func main() {
 	router, err := handler.New()
 	if err != nil {
-		fmt.Println("Error router")
+		fmt.Printf("Error router: %v\n", err)
 	}
 
-	router.Run("localhost:1234")
+	if err := router.Run("localhost:1234"); err != nil {
+		fmt.Printf("Error: %v\n", err)
+	}
 }

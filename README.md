@@ -64,12 +64,12 @@ The result must be:
 ```
 {
     "data": {
-        "id": "63456c670d86f2da5dd0b331",
+        "id": <ObjectId>,
         "userName": "user1",
         "balance": 5,
         "history": [
             {
-                "id": "63456c8e0d86f2da5dd0b333",
+                "id": <ObjectId>,
                 "from": "user1",
                 "to": "user2",
                 "amount": 5,

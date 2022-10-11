@@ -50,21 +50,3 @@ func (s accountStore) GetByUserName(userName string) (*model.Account, error) {
 
 	return result, nil
 }
-
-func (s accountStore) UpdateBalance(account *model.Account) (error) {
-	fmt.Printf("Store: updating account: %v ...\n", account.UserName)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	update := bson.M{"balance": account.Balance}
-	collection := s.db.Database(s.config.MongoDatabase).Collection(accountCollection)
-	if _, err := collection.UpdateOne(ctx, bson.M{"_id": account.ID}, bson.M{"$set": update}); err != nil {
-		fmt.Printf("Store: failed to update account: %v\n", err)
-		return err
-	}
-
-	fmt.Println("Store: update account successfully!")
-
-	return nil
-}
