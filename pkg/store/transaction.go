@@ -60,8 +60,6 @@ func (s transactionStore) Create(transaction *model.Transaction) error {
 			return nil, err
 		}
 
-		fmt.Println("Store: create transaction successfully!")
-
 		return nil, nil
 	}
 
